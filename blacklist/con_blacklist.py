@@ -26,19 +26,6 @@ def seed():
 
 
 @export
-def blacklist_address(address: str):
-    assert ctx.caller == metadata["operator"], "Only operator can perform this action!"
-
-    current_list = not_allowed.get()
-    assert address not in current_list, "Address is already blacklisted!"
-
-    current_list.append(address)
-    not_allowed.set(current_list)
-
-    BlacklistEvent({"from": ctx.caller, "to": address})
-
-
-@export
 def blacklist_addresses(addresses: list):
     assert ctx.caller == metadata["operator"], "Only operator can perform this action!"
 
@@ -55,28 +42,26 @@ def blacklist_addresses(addresses: list):
     return {"added": added}
 
 
+# Remove a list of addresses from the blacklist
 @export
-def check_blacklist_for_address(address: str):
-    current_list = not_allowed.get()
-    if address in current_list:
-        return "Address is blacklisted!"
-    return "Address is not blacklisted!"
-
-
-@export
-def remove_from_blacklist(address: str):
+def remove_from_blacklist(address: list):
     assert ctx.caller == metadata["operator"], "Only operator can perform this action!"
 
     current_list = not_allowed.get()
-    assert address in current_list, "Address is not currently blacklisted!"
+    removed = []
 
-    current_list.remove(address)
+    for addr in address:
+        if addr in current_list:
+            current_list.remove(addr)
+            removed.append(addr)
     not_allowed.set(current_list)
-
-    RemoveBlacklistEvent({"from": ctx.caller, "to": address})
+    RemoveBlacklistEvent({"from": ctx.caller, "to": str(removed)})
+    return {"removed": removed}
 
 
 @export
-def change_metadata(key: str, value: str):
-    assert ctx.caller == metadata["operator"], "Only operator can set metadata!"
-    metadata[key] = value
+def is_address_blacklisted(address: str):
+    current_list = not_allowed.get()
+    if address in current_list:
+        return True
+    return False

@@ -12,6 +12,7 @@ venv/
 env/
 ENV/
 .venv
+.env
 
 # IDE
 .vscode/
@@ -23,3 +24,5 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+
+distributor/

@@ -22,15 +22,6 @@ class TestBlacklistContract:
         self.c.submit(code, name="con_blacklist")
         self.blacklist = self.c.get_contract("con_blacklist")
 
-    def test_blacklist_single_address(self):
-        operator = "sys"
-        user = "user_address"
-
-        self.blacklist.blacklist_address(address=user, signer=operator)
-
-        status = self.blacklist.check_blacklist_for_address(address=user)
-        assert status == "Address is blacklisted!"
-
     def test_blacklist_multiple_addresses(self):
         operator = "sys"
         users = ["u1", "u2", "u3"]
@@ -40,15 +31,21 @@ class TestBlacklistContract:
         assert result["added"] == users
 
         for u in users:
-            status = self.blacklist.check_blacklist_for_address(address=u)
-            assert status == "Address is blacklisted!"
+            status = self.blacklist.is_address_blacklisted(address=u)
+            assert status == True
 
     def test_remove_from_blacklist(self):
         operator = "sys"
-        user = "removed_user"
+        user = ["u1", "u2", "u3"]
 
-        self.blacklist.blacklist_address(address=user, signer=operator)
-        self.blacklist.remove_from_blacklist(address=user, signer=operator)
+        result = self.blacklist.blacklist_addresses(addresses=user, signer=operator)
+        assert result["added"] == user
+        for u in user:
+            status = self.blacklist.is_address_blacklisted(address=u)
+            assert status == True
 
-        status = self.blacklist.check_blacklist_for_address(address=user)
-        assert status == "Address is not blacklisted!"
+        remove = self.blacklist.remove_from_blacklist(address=user, signer=operator)
+        assert remove["removed"] == user
+        for u in user:
+            status = self.blacklist.is_address_blacklisted(address=u)
+            assert status == False
