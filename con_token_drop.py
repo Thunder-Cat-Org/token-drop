@@ -8,6 +8,7 @@ deposits = Hash(default_value=0)
 allocated = Hash(default_value=0)
 pool_balance = Hash(default_value=0)
 open_pool_limit = Hash(default_value=0)
+pool_index = Hash()  # pool_index[pool_id] = list of addresses
 
 # blacklist stored as boolean per (pool_id, addr)
 pool_blacklist = Hash(default_value=False)
@@ -323,11 +324,10 @@ def get_allocation_stats(pool_id: str):
 
     total_alloc = 0.0
 
-    # iterate allocated keys
-    for key in allocated.keys():
-        pid, addr = key
-        if pid == pool_id:
-            total_alloc = total_alloc + allocated[(pid, addr)]
+    addrs = pool_index[pool_id] or []
+
+    for addr in addrs:
+        total_alloc += allocated[(pool_id, addr)]
 
     balance = pool_balance[pool_id]
 
